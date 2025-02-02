@@ -6,7 +6,7 @@ import { json } from '@remix-run/node';
 import { LoaderFunction } from '@remix-run/node';
 import { loadData } from './../utils/loadData';
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
   const data = loadData();
   return json(data);
 };

@@ -15,25 +15,26 @@ interface CategoryPageProps {
 }
 
 const CategoryPage: React.FC<CategoryPageProps> = ({ letter, data, onBack }) => {
-  const [filteredWords, setFilteredWords] = useState<WordData[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const wordsPerPage = 10;
 
-  useEffect(() => {
-    if (letter) {
-      const categorizedWords = data
-        .filter(wordData => wordData.word[0].toUpperCase() === letter.toUpperCase())
-        .filter((wordData, index, self) => self.findIndex(w => w.word === wordData.word) === index); // Remove duplicates
+  const getFilteredWords = () => {
+    const uniqueWords = Array.from(new Set(data.map(word => word.word)))
+      .map(word => data.find(wordData => wordData?.word === word))
+      .filter(wordData => wordData !== undefined) as WordData[];
+    return uniqueWords.slice(currentPage * wordsPerPage, (currentPage + 1) * wordsPerPage);
+  };
 
-      setFilteredWords(categorizedWords.slice(currentPage * wordsPerPage, (currentPage + 1) * wordsPerPage));
-    }
-  }, [letter, data, currentPage]);
-
-  const handleWordPageChange = (newPage: number) => {
+  const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
-  const totalPages = letter ? Math.ceil(data.filter(wordData => wordData.word[0].toUpperCase() === letter.toUpperCase()).length / wordsPerPage) : 0;
+  const filteredWords = getFilteredWords();
+  const totalPages = Math.ceil(data.length / wordsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [data]);
 
   return (
     <div>
@@ -43,19 +44,19 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ letter, data, onBack }) => 
         <div>
           <ul>
             {filteredWords.map(wordData => (
-              <li key={wordData.word}>
-                <a href={wordData.link} target="_blank" rel="noopener noreferrer">
-                  {wordData.word}
-                </a> - {wordData.definition} ({wordData.language})
+              <li key={wordData?.word}>
+                <a href={wordData?.link} target="_blank" rel="noopener noreferrer">
+                  {wordData?.word}
+                </a> - {wordData?.definition} ({wordData?.language})
               </li>
             ))}
           </ul>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-            <button onClick={() => handleWordPageChange(currentPage - 1)} disabled={currentPage === 0}>
+            <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}>
               Bumalik
             </button>
             <span style={{ margin: '0 10px' }}>{currentPage + 1} / {totalPages}</span>
-            <button onClick={() => handleWordPageChange(currentPage + 1)} disabled={currentPage >= totalPages - 1}>
+            <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages - 1}>
               Susunod
             </button>
           </div>

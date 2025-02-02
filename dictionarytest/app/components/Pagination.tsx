@@ -8,13 +8,10 @@ interface PaginationProps {
 const Pagination: React.FC<PaginationProps> = ({ currentPage, onPageChange }) => {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   
-  // Sort letters bypassing case
-  const sortedLetters = letters.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-
   return (
     <div>
       <ul style={{ display: 'flex', justifyContent: 'center', listStyleType: 'none', padding: 0 }}>
-        {sortedLetters.map(letter => (
+        {letters.map(letter => (
           <li
             key={letter}
             style={{
