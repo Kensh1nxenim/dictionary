@@ -24,20 +24,27 @@ const SearchPage: React.FC<SearchPageProps> = ({ data, onBack, onSearch, searchQ
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    onSearch(event.target.value);
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSearch(searchTerm);
   };
 
   return (
     <div className="search-container">
       <button className="back-button" onClick={onBack}>Bumalik sa Diksyunaryo</button>
       <h2>Maghanap sa Diksyunaryo</h2>
-      <input
-        type="text"
-        className="search-input"
-        value={searchTerm}
-        onChange={handleSearchChange}
-        placeholder="Maghanap ng salita..."
-      />
+      <form onSubmit={handleSubmit} className="search-form">
+        <input
+          type="text"
+          className="search-input"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Maghanap ng salita..."
+        />
+        <button type="submit" className="search-button">Maghanap</button>
+      </form>
       {searchTerm.trim() !== '' && (
         <div className="results-container">
           <h2>Resulta</h2>

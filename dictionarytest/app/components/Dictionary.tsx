@@ -28,16 +28,27 @@ const Dictionary: React.FC<DictionaryProps> = ({ data }) => {
     setSearchResults({ exactMatches: filteredData, closestMatches: [] });
   };
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = (query: string) => {
     setIsSearching(true);
     setSearchQuery(query);
-    try {
-      const response = await fetch(`/search?query=${query.toLowerCase()}`);
-      const result = await response.json();
-      setSearchResults(result);
-    } catch (error) {
-      console.error('Error during search:', error);
-    }
+    
+    setSearchResults({ exactMatches: [], closestMatches: [] });
+
+    setTimeout(() => {
+      const exactMatches = data.filter(wordData => wordData.word.toLowerCase() === query.toLowerCase());
+      const remainingWords = data.filter(wordData => wordData.word.toLowerCase() !== query.toLowerCase());
+
+      const sortedWords = remainingWords.sort((a, b) => 
+        getLevenshteinDistance(a.word.toLowerCase(), query.toLowerCase()) -
+        getLevenshteinDistance(b.word.toLowerCase(), query.toLowerCase())
+      );
+
+      const closestMatches = sortedWords.filter(wordData => 
+        !exactMatches.some(exactMatch => exactMatch.word.toLowerCase() === wordData.word.toLowerCase())
+      ).slice(0, 5);
+
+      setSearchResults({ exactMatches, closestMatches });
+    }, 0);
   };
 
   const handleBack = () => {
@@ -45,6 +56,30 @@ const Dictionary: React.FC<DictionaryProps> = ({ data }) => {
     setIsSearching(false);
     setSearchQuery('');
     setSearchResults({ exactMatches: [], closestMatches: [] });
+  };
+
+  const getLevenshteinDistance = (a: string, b: string): number => {
+    const matrix: number[][] = [];
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    return matrix[b.length][a.length];
   };
 
   return (
